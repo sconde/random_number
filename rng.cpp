@@ -30,15 +30,18 @@ void RNG::init(unsigned int* seeds) {
   have_spare_gaussian = new bool[num_threads];
   gaussians[0] = new double[num_threads];
   gaussians[1] = new double[num_threads];
-  for (int i = 0; i < RNG_STATE_SIZE; ++i)
+
+  for (int i = 0; i < RNG_STATE_SIZE; ++i) {
     state[i] = new unsigned int[num_threads];
+  }
 
   for (int t = 0; t < num_threads; ++t) {
     have_spare_gaussian[t] = false;
     state[0][t] = seeds[t];
     for (int i = 1; i < RNG_STATE_SIZE; ++i) {
-      state[i][t] =
-          (int)(1812433253 * (state[i - 1][t] ^ (state[i - 1][t] >> 30)) + i);
+      // Merseene Twister magic numbers
+      state[i][t] = static_cast<int>(
+          1812433253 * (state[i - 1][t] ^ (state[i - 1][t] >> 30)) + i);
     }
 
     make_random(t);
