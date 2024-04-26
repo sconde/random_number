@@ -23,7 +23,9 @@ RNG::RNG(unsigned int* seeds) : num_threads(omp_get_max_threads()) {
 }
 
 void RNG::init(unsigned int* seeds) {
-  for (int i = 0; i < RNG_BLOCKS; ++i) data[i] = new double[num_threads];
+  for (int i = 0; i < RNG_BLOCKS; ++i) {
+    data[i] = new double[num_threads];
+  }
   next_block = new int[num_threads];
   have_spare_gaussian = new bool[num_threads];
   gaussians[0] = new double[num_threads];
