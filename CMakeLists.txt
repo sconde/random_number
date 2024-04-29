@@ -36,6 +36,11 @@ else()
     message(FATAL_ERROR "clang-format not found.")
 endif()
 
+# Check build type
+#if(CMAKE_BUILD_TYPE MATCHES "DEBUG")
+#    add_compile_options(-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer)
+#endif()
+
 
 # Find OpenMP
 find_package(OpenMP REQUIRED)
@@ -43,8 +48,18 @@ message("OPENMP FOUND")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 
 # Add your source files
-add_executable(rng.x main.cpp rng.cpp)
+add_executable(rng.x main.cpp rng.cpp
+        main.cpp)
 target_link_libraries(rng.x PRIVATE OpenMP::OpenMP_CXX)
+# Add the -pg flag to enable profiling with gprof
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # Enable profiling with LLVM's built-in tools
+        target_compile_options(rng.x PRIVATE -fprofile-instr-generate)
+        target_link_options(rng.x PRIVATE -fprofile-instr-generate)
+    else()
+        target_compile_options(rng.x PRIVATE -pg)
+        target_link_options(rng.x PRIVATE -pg)
+endif()
 
 # Add clang-tidy checks
 set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")

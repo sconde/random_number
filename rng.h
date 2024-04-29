@@ -9,7 +9,7 @@ static constexpr double SQRT3 = 1.7320508075688773;
 
 struct RNG {
  public:
-  RNG(unsigned int* seeds);
+  explicit RNG(const unsigned int* seeds);
   RNG();
 
   double u01();       // uniform random number between 0 and 1
@@ -17,10 +17,10 @@ struct RNG {
   double gaussian();  // Gaussian random number with zero mean and unit variance
 
  private:
-  void init(unsigned int* seeds);
+  void init(const unsigned int* seeds);
 
   void make_random();            // Generates a new batch of random numbers.
-  void make_random(int thread);  // Generates a new batch of random numbers.
+  void make_random(int thread)const;  // Generates a new batch of random numbers.
 
   double* data[RNG_BLOCKS];
   int* next_block;

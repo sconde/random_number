@@ -7,9 +7,9 @@
 #include <ctime>
 
 RNG::RNG() : num_threads(omp_get_max_threads()) {
-  unsigned int* seeds = new unsigned int[num_threads];
+  auto* seeds = new unsigned int[num_threads];
 
-  srand(time(NULL));
+  srand(time(nullptr));
 
   for (int i = 0; i < num_threads; ++i) {
     seeds[i] = arc4random();
@@ -18,21 +18,21 @@ RNG::RNG() : num_threads(omp_get_max_threads()) {
   init(seeds);
 }
 
-RNG::RNG(unsigned int* seeds) : num_threads(omp_get_max_threads()) {
+RNG::RNG(const unsigned int* seeds) : num_threads(omp_get_max_threads()) {
   init(seeds);
 }
 
-void RNG::init(unsigned int* seeds) {
-  for (int i = 0; i < RNG_BLOCKS; ++i) {
-    data[i] = new double[num_threads];
+void RNG::init(const unsigned int* seeds) {
+  for (auto& i : data) {
+    i = new double[num_threads];
   }
   next_block = new int[num_threads];
   have_spare_gaussian = new bool[num_threads];
   gaussians[0] = new double[num_threads];
   gaussians[1] = new double[num_threads];
 
-  for (int i = 0; i < RNG_STATE_SIZE; ++i) {
-    state[i] = new unsigned int[num_threads];
+  for (auto& i : state) {
+    i = new unsigned int[num_threads];
   }
 
   for (int t = 0; t < num_threads; ++t) {
@@ -50,7 +50,7 @@ void RNG::init(unsigned int* seeds) {
 
 // uniform random number between 0 and 1
 double RNG::u01() {
-  int t = omp_get_thread_num();
+  const int t = omp_get_thread_num();
   if (RNG_BLOCKS == next_block[t]) make_random();
   return data[next_block[t]++][t];
 }
@@ -83,7 +83,7 @@ double RNG::gaussian() {
 // Generates a new batch of random numbers, hopefully in parallel.
 void RNG::make_random() { make_random(omp_get_thread_num()); }
 
-void RNG::make_random(int t) {
+auto RNG::make_random(int t) const -> void {
   for (int n = 0; n < RNG_BLOCKS; ++n) {
     if (n % RNG_STATE_SIZE == 0) {
       for (int i = 0; i < RNG_STATE_SIZE; ++i) {
@@ -102,7 +102,7 @@ void RNG::make_random(int t) {
     y ^= ((y << 15) & 0xefc60000);
     y ^= (y >> 18);
 
-    data[n][t] = y / double((unsigned int)0xffffffff);
+    data[n][t] = y / static_cast<double>((unsigned int)0xffffffff);
   }
 
   next_block[t] = 0;
